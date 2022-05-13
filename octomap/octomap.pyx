@@ -7,9 +7,9 @@ cimport dynamicEDT3D_defs as edt
 import numpy as np
 cimport numpy as np
 ctypedef np.float64_t DOUBLE_t
-ctypedef defs.OccupancyOcTreeBase[defs.OcTreeNode].tree_iterator* tree_iterator_ptr
-ctypedef defs.OccupancyOcTreeBase[defs.OcTreeNode].leaf_iterator* leaf_iterator_ptr
-ctypedef defs.OccupancyOcTreeBase[defs.OcTreeNode].leaf_bbx_iterator* leaf_bbx_iterator_ptr
+ctypedef defs.OccupancyOcTreeBase[defs.SemanticOcTreeNode].tree_iterator* tree_iterator_ptr
+ctypedef defs.OccupancyOcTreeBase[defs.SemanticOcTreeNode].leaf_iterator* leaf_iterator_ptr
+ctypedef defs.OccupancyOcTreeBase[defs.SemanticOcTreeNode].leaf_bbx_iterator* leaf_bbx_iterator_ptr
 
 class NullPointerException(Exception):
     """
@@ -43,12 +43,12 @@ cdef class OcTreeKey:
                         self.thisptr[0][1] == other[1] and \
                         self.thisptr[0][2] == other[2])
 
-cdef class OcTreeNode:
+cdef class SemanticOcTreeNode:
     """
-    Nodes to be used in OcTree.
+    Nodes to be used in SemanticOcTree.
     They represent 3d occupancy grid cells. "value" stores their log-odds occupancy.
     """
-    cdef defs.OcTreeNode *thisptr
+    cdef defs.SemanticOcTreeNode *thisptr
     def __cinit__(self):
         pass
     def __dealloc__(self):
@@ -105,8 +105,8 @@ cdef class iterator_base:
     """
     Iterator over the complete tree (inner nodes and leafs).
     """
-    cdef defs.OcTree *treeptr
-    cdef defs.OccupancyOcTreeBase[defs.OcTreeNode].iterator_base *thisptr
+    cdef defs.SemanticOcTree *treeptr
+    cdef defs.OccupancyOcTreeBase[defs.SemanticOcTreeNode].iterator_base *thisptr
     def __cinit__(self):
         pass
 
@@ -190,13 +190,13 @@ cdef class iterator_base:
 
     def getOccupancy(self):
         if self.__is_acceseable():
-            return (<defs.OcTreeNode>deref(deref(self.thisptr))).getOccupancy()
+            return (<defs.SemanticOcTreeNode>deref(deref(self.thisptr))).getOccupancy()
         else:
             raise NullPointerException
 
     def getValue(self):
         if self.__is_acceseable():
-            return (<defs.OcTreeNode>deref(deref(self.thisptr))).getValue()
+            return (<defs.SemanticOcTreeNode>deref(deref(self.thisptr))).getValue()
         else:
             raise NullPointerException
 
@@ -297,29 +297,27 @@ def _octree_read(filename):
     This creates a new octree which you need to delete yourself.
     """
     cdef defs.istringstream iss
-    cdef OcTree tree = OcTree(0.1)
-    if filename.startswith(b"# Octomap OcTree file"):
+    cdef SemanticOcTree tree = SemanticOcTree(0.1)
+    if filename.startswith(b"# Octomap SemanticOcTree file"):
         iss.str(string(<char*?>filename, len(filename)))
         del tree.thisptr
-        tree.thisptr = <defs.OcTree*>tree.thisptr.read(<defs.istream&?>iss)
+        tree.thisptr = <defs.SemanticOcTree*>tree.thisptr.read(<defs.istream&?>iss)
         return tree
     else:
         del tree.thisptr
-        tree.thisptr = <defs.OcTree*>tree.thisptr.read(string(<char*?>filename))
+        tree.thisptr = <defs.SemanticOcTree*>tree.thisptr.read(string(<char*?>filename))
         return tree
 
-cdef class OcTree:
+cdef class SemanticOcTree:
     """
     octomap main map data structure, stores 3D occupancy grid map in an OcTree.
     """
-    cdef defs.OcTree *thisptr
+    cdef defs.SemanticOcTree *thisptr
     cdef edt.DynamicEDTOctomap *edtptr
     def __cinit__(self, arg):
         import numbers
         if isinstance(arg, numbers.Number):
-            self.thisptr = new defs.OcTree(<double?>arg)
-        else:
-            self.thisptr = new defs.OcTree(string(<char*?>arg))
+            self.thisptr = new defs.SemanticOcTree(<double?>arg)
 
     def __dealloc__(self):
         if self.thisptr:
@@ -454,28 +452,28 @@ cdef class OcTree:
                 return False
 
     def isNodeOccupied(self, node):
-        if isinstance(node, OcTreeNode):
-            if (<OcTreeNode>node).thisptr:
-                return self.thisptr.isNodeOccupied(deref((<OcTreeNode>node).thisptr))
+        if isinstance(node, SemanticOcTreeNode):
+            if (<SemanticOcTreeNode>node).thisptr:
+                return self.thisptr.isNodeOccupied(deref((<SemanticOcTreeNode>node).thisptr))
             else:
                 raise NullPointerException
         else:
-            return self.thisptr.isNodeOccupied(<defs.OcTreeNode>deref(deref((<tree_iterator>node).thisptr)))
-
+            return self.thisptr.isNodeOccupied(<defs.SemanticOcTreeNode>deref(deref((<tree_iterator>node).thisptr)))
+    
     def isNodeAtThreshold(self, node):
-        if isinstance(node, OcTreeNode):
-            if (<OcTreeNode>node).thisptr:
-                return self.thisptr.isNodeAtThreshold(deref((<OcTreeNode>node).thisptr))
+        if isinstance(node, SemanticOcTreeNode):
+            if (<SemanticOcTreeNode>node).thisptr:
+                return self.thisptr.isNodeAtThreshold(deref((<SemanticOcTreeNode>node).thisptr))
             else:
                 raise NullPointerException
         else:
-            return self.thisptr.isNodeAtThreshold(<defs.OcTreeNode>deref(deref((<tree_iterator>node).thisptr)))
+            return self.thisptr.isNodeAtThreshold(<defs.SemanticOcTreeNode>deref(deref((<tree_iterator>node).thisptr)))
 
     def getLabels(self, np.ndarray[DOUBLE_t, ndim=2] points):
         cdef int i
         cdef np.ndarray[DOUBLE_t, ndim=1] pt
         cdef OcTreeKey key
-        cdef OcTreeNode node
+        cdef SemanticOcTreeNode node
         # -1: unknown, 0: empty, 1: occupied
         cdef np.ndarray[np.int32_t, ndim=1] labels = \
             np.full((points.shape[0],), -1, dtype=np.int32)
@@ -492,6 +490,7 @@ cdef class OcTree:
         cdef float resolution = self.getResolution()
 
         cdef list occupied = []
+        cdef list occupied_category = []
         cdef list empty = []
         cdef leaf_iterator it
         cdef float size
@@ -501,18 +500,23 @@ cdef class OcTree:
         cdef np.ndarray[np.int64_t, ndim=2] indices
         cdef np.ndarray[DOUBLE_t, ndim=2] points
         cdef np.ndarray keep
+        cdef int category
         cdef int dimension
         for it in self.begin_leafs():
             is_occupied = self.isNodeOccupied(it)
             size = it.getSize()
             center = it.getCoordinate()
+            category = it.getCategory()
 
             dimension = max(1, round(it.getSize() / resolution))
             origin = center - (dimension / 2 - 0.5) * resolution
             indices = np.column_stack(np.nonzero(np.ones((dimension, dimension, dimension))))
             points = origin + indices * np.array(resolution)
-
+            
             if is_occupied:
+                pts = np.ones((points.shape[0], points.shape[1] + 1))
+                pts[:,:3] = points
+                pts[:, 3] = category
                 occupied.append(points)
             else:
                 empty.append(points)
@@ -520,7 +524,7 @@ cdef class OcTree:
         cdef np.ndarray[DOUBLE_t, ndim=2] occupied_arr
         cdef np.ndarray[DOUBLE_t, ndim=2] empty_arr
         if len(occupied) == 0:
-            occupied_arr = np.zeros((0, 3), dtype=float)
+            occupied_arr = np.zeros((0, 4), dtype=float)
         else:
             occupied_arr = np.concatenate(occupied, axis=0)
         if len(empty) == 0:
@@ -560,22 +564,49 @@ cdef class OcTree:
                                       <double?>maxrange,
                                       bool(lazy_eval),
                                       bool(discretize))
+    
+    def insertPointCloudAndSemantics(self,
+                         np.ndarray[DOUBLE_t, ndim=2] pointcloud,
+                         np.ndarray[DOUBLE_t, ndim=1] origin,
+                         id,
+                         est_category,
+                         confidence,
+                         maxrange=-1.,
+                         lazy_eval=False,
+                         discretize=False):
+
+        cdef defs.Pointcloud pc = defs.Pointcloud()
+        for p in pointcloud:
+            pc.push_back(<float>p[0],
+                         <float>p[1],
+                         <float>p[2])
+
+        self.thisptr.insertPointCloudAndSemantics(pc,
+                                      defs.Vector3(<float>origin[0],
+                                                   <float>origin[1],
+                                                   <float>origin[2]),
+                                      int(id),
+                                      int(est_category),
+                                      float(confidence),
+                                      <double?>maxrange,
+                                      bool(lazy_eval),
+                                      bool(discretize))
 
     def begin_tree(self, maxDepth=0):
         itr = tree_iterator()
-        itr.thisptr = new defs.OccupancyOcTreeBase[defs.OcTreeNode].tree_iterator(self.thisptr.begin_tree(maxDepth))
+        itr.thisptr = new defs.OccupancyOcTreeBase[defs.SemanticOcTreeNode].tree_iterator(self.thisptr.begin_tree(maxDepth))
         itr.treeptr = self.thisptr
         return itr
 
     def begin_leafs(self, maxDepth=0):
         itr = leaf_iterator()
-        itr.thisptr = new defs.OccupancyOcTreeBase[defs.OcTreeNode].leaf_iterator(self.thisptr.begin_leafs(maxDepth))
+        itr.thisptr = new defs.OccupancyOcTreeBase[defs.SemanticOcTreeNode].leaf_iterator(self.thisptr.begin_leafs(maxDepth))
         itr.treeptr = self.thisptr
         return itr
 
     def begin_leafs_bbx(self, np.ndarray[DOUBLE_t, ndim=1] bbx_min, np.ndarray[DOUBLE_t, ndim=1] bbx_max, maxDepth=0):
         itr = leaf_bbx_iterator()
-        itr.thisptr = new defs.OccupancyOcTreeBase[defs.OcTreeNode].leaf_bbx_iterator(self.thisptr.begin_leafs_bbx(defs.point3d(bbx_min[0], bbx_min[1], bbx_min[2]),
+        itr.thisptr = new defs.OccupancyOcTreeBase[defs.SemanticOcTreeNode].leaf_bbx_iterator(self.thisptr.begin_leafs_bbx(defs.point3d(bbx_min[0], bbx_min[1], bbx_min[2]),
                                                                                                                    defs.point3d(bbx_max[0], bbx_max[1], bbx_max[2]),
                                                                                                                    maxDepth))
         itr.treeptr = self.thisptr
@@ -583,19 +614,19 @@ cdef class OcTree:
 
     def end_tree(self):
         itr = tree_iterator()
-        itr.thisptr = new defs.OccupancyOcTreeBase[defs.OcTreeNode].tree_iterator(self.thisptr.end_tree())
+        itr.thisptr = new defs.OccupancyOcTreeBase[defs.SemanticOcTreeNode].tree_iterator(self.thisptr.end_tree())
         itr.treeptr = self.thisptr
         return itr
 
     def end_leafs(self):
         itr = leaf_iterator()
-        itr.thisptr = new defs.OccupancyOcTreeBase[defs.OcTreeNode].leaf_iterator(self.thisptr.end_leafs())
+        itr.thisptr = new defs.OccupancyOcTreeBase[defs.SemanticOcTreeNode].leaf_iterator(self.thisptr.end_leafs())
         itr.treeptr = self.thisptr
         return itr
 
     def end_leafs_bbx(self):
         itr = leaf_bbx_iterator()
-        itr.thisptr = new defs.OccupancyOcTreeBase[defs.OcTreeNode].leaf_bbx_iterator(self.thisptr.end_leafs_bbx())
+        itr.thisptr = new defs.OccupancyOcTreeBase[defs.SemanticOcTreeNode].leaf_bbx_iterator(self.thisptr.end_leafs_bbx())
         itr.treeptr = self.thisptr
         return itr
 
@@ -616,7 +647,7 @@ cdef class OcTree:
         return np.array((p.x(), p.y(), p.z()))
 
     def getRoot(self):
-        node = OcTreeNode()
+        node = SemanticOcTreeNode()
         node.thisptr = self.thisptr.getRoot()
         return node
 
@@ -663,7 +694,7 @@ cdef class OcTree:
         self.thisptr.resetChangeDetection()
 
     def search(self, value, depth=0):
-        node = OcTreeNode()
+        node = SemanticOcTreeNode()
         if isinstance(value, OcTreeKey):
             node.thisptr = self.thisptr.search(defs.OcTreeKey(<unsigned short int>value[0],
                                                               <unsigned short int>value[1],
@@ -745,7 +776,7 @@ cdef class OcTree:
         """
         Integrate occupancy measurement and Manipulate log_odds value of voxel directly. 
         """
-        node = OcTreeNode()
+        node = SemanticOcTreeNode()
         if isinstance(value, OcTreeKey):
             if isinstance(update, bool):
                 node.thisptr = self.thisptr.updateNode(defs.OcTreeKey(<unsigned short int>value[0],
@@ -856,26 +887,26 @@ cdef class OcTree:
         return np.array([x, y, z], dtype=float)
 
     def expandNode(self, node):
-        self.thisptr.expandNode((<OcTreeNode>node).thisptr)
+        self.thisptr.expandNode((<SemanticOcTreeNode>node).thisptr)
 
     def createNodeChild(self, node, int idx):
-        child = OcTreeNode()
-        child.thisptr = self.thisptr.createNodeChild((<OcTreeNode>node).thisptr, idx)
+        child = SemanticOcTreeNode()
+        child.thisptr = self.thisptr.createNodeChild((<SemanticOcTreeNode>node).thisptr, idx)
         return child
 
     def getNodeChild(self, node, int idx):
-        child = OcTreeNode()
-        child.thisptr = self.thisptr.getNodeChild((<OcTreeNode>node).thisptr, idx)
+        child = SemanticOcTreeNode()
+        child.thisptr = self.thisptr.getNodeChild((<SemanticOcTreeNode>node).thisptr, idx)
         return child
 
     def isNodeCollapsible(self, node):
-        return self.thisptr.isNodeCollapsible((<OcTreeNode>node).thisptr)
+        return self.thisptr.isNodeCollapsible((<SemanticOcTreeNode>node).thisptr)
 
     def deleteNodeChild(self, node, int idx):
-        self.thisptr.deleteNodeChild((<OcTreeNode>node).thisptr, idx)
+        self.thisptr.deleteNodeChild((<SemanticOcTreeNode>node).thisptr, idx)
 
     def pruneNode(self, node):
-        return self.thisptr.pruneNode((<OcTreeNode>node).thisptr)
+        return self.thisptr.pruneNode((<SemanticOcTreeNode>node).thisptr)
 
     def dynamicEDT_generate(self, maxdist,
                             np.ndarray[DOUBLE_t, ndim=1] bbx_min,

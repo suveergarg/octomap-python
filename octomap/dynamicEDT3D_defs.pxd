@@ -13,12 +13,12 @@ cdef extern from "octomap/OcTreeKey.h" namespace "octomap":
         OcTreeKey() except +
         OcTreeKey(unsigned short int a, unsigned short int b, unsigned short int c) except +
 
-cdef extern from "octomap/OcTree.h" namespace "octomap":
-    cdef cppclass OcTree
+cdef extern from "octomap/SemanticOcTree.h" namespace "octomap":
+    cdef cppclass SemanticOcTree
 
 cdef extern from "dynamicEDT3D/dynamicEDTOctomap.h":
     cdef cppclass DynamicEDTOctomap:
-        DynamicEDTOctomap(float maxdist, OcTree *_octree, point3d bbxMin, point3d bbxMax, bool treatUnknownAsOccupied)
+        DynamicEDTOctomap(float maxdist, SemanticOcTree *_octree, point3d bbxMin, point3d bbxMax, bool treatUnknownAsOccupied)
         bool checkConsistency()
         float getDistance(point3d& p)
         float getDistance(OcTreeKey& k)

@@ -200,6 +200,13 @@ cdef class iterator_base:
         else:
             raise NullPointerException
 
+    def getCategory(self):
+        if self.__is_acceseable():
+            return (<defs.SemanticOcTreeNode>deref(deref(self.thisptr))).getCategory()
+        else:
+            raise NullPointerException
+
+
 
 cdef class tree_iterator(iterator_base):
     """
@@ -517,7 +524,7 @@ cdef class SemanticOcTree:
                 pts = np.ones((points.shape[0], points.shape[1] + 1))
                 pts[:,:3] = points
                 pts[:, 3] = category
-                occupied.append(points)
+                occupied.append(pts)
             else:
                 empty.append(points)
 

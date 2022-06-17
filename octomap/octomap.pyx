@@ -6,7 +6,7 @@ cimport octomap_defs as defs
 cimport dynamicEDT3D_defs as edt
 import numpy as np
 cimport numpy as np
-ctypedef np.float64_t DOUBLE_t
+ctypedef np.float32_t DOUBLE_t
 ctypedef defs.OccupancyOcTreeBase[defs.SemanticOcTreeNode].tree_iterator* tree_iterator_ptr
 ctypedef defs.OccupancyOcTreeBase[defs.SemanticOcTreeNode].leaf_iterator* leaf_iterator_ptr
 ctypedef defs.OccupancyOcTreeBase[defs.SemanticOcTreeNode].leaf_bbx_iterator* leaf_bbx_iterator_ptr
@@ -512,16 +512,16 @@ cdef class SemanticOcTree:
         for it in self.begin_leafs():
             is_occupied = self.isNodeOccupied(it)
             size = it.getSize()
-            center = it.getCoordinate()
+            center = np.array(it.getCoordinate(), dtype = np.float32)
             category = it.getCategory()
 
             dimension = max(1, round(it.getSize() / resolution))
             origin = center - (dimension / 2 - 0.5) * resolution
             indices = np.column_stack(np.nonzero(np.ones((dimension, dimension, dimension))))
-            points = origin + indices * np.array(resolution)
+            points = np.array(origin + indices * np.array(resolution), dtype = np.float32)
             
             if is_occupied:
-                pts = np.ones((points.shape[0], points.shape[1] + 1))
+                pts = np.ones((points.shape[0], points.shape[1] + 1), dtype = np.float32)
                 pts[:,:3] = points
                 pts[:, 3] = category
                 occupied.append(pts)
@@ -531,11 +531,11 @@ cdef class SemanticOcTree:
         cdef np.ndarray[DOUBLE_t, ndim=2] occupied_arr
         cdef np.ndarray[DOUBLE_t, ndim=2] empty_arr
         if len(occupied) == 0:
-            occupied_arr = np.zeros((0, 4), dtype=float)
+            occupied_arr = np.zeros((0, 4), dtype= np.float32)
         else:
             occupied_arr = np.concatenate(occupied, axis=0)
         if len(empty) == 0:
-            empty_arr = np.zeros((0, 3), dtype=float)
+            empty_arr = np.zeros((0, 3), dtype=np.float32)
         else:
             empty_arr = np.concatenate(empty, axis=0)
         return occupied_arr, empty_arr

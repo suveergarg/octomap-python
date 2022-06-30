@@ -40,7 +40,7 @@ cdef extern from "octomap/Pointcloud.h" namespace "octomap":
         Pointcloud() except +
         void push_back(float, float, float)
         void push_back(point3d* p)
-
+        point3d getPoint(unsigned int i) const;
 
 cdef extern from "octomap/SemanticOcTree.h" namespace "octomap":
     cdef cppclass SemanticOcTreeNode:

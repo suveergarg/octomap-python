@@ -7,6 +7,7 @@ cimport dynamicEDT3D_defs as edt
 import numpy as np
 cimport numpy as np
 ctypedef np.float64_t DOUBLE_t
+ctypedef np.float32_t FLOAT_t
 ctypedef defs.OccupancyOcTreeBase[defs.SemanticOcTreeNode].tree_iterator* tree_iterator_ptr
 ctypedef defs.OccupancyOcTreeBase[defs.SemanticOcTreeNode].leaf_iterator* leaf_iterator_ptr
 ctypedef defs.OccupancyOcTreeBase[defs.SemanticOcTreeNode].leaf_bbx_iterator* leaf_bbx_iterator_ptr
@@ -516,26 +517,37 @@ cdef class SemanticOcTree:
             category = it.getCategory()
 
             dimension = max(1, round(it.getSize() / resolution))
-            origin = center - (dimension / 2 - 0.5) * resolution
+            origin = center - ((dimension / 2.0) - 0.5) * resolution
+            #if is_occupied:
+            #    print("1center", center, resolution, dimension, ((dimension / 2.0) - 0.5), ((dimension / 2.0) - 0.5) * resolution)
+            #    print("Origin", origin)
+
             indices = np.column_stack(np.nonzero(np.ones((dimension, dimension, dimension))))
-            points = origin + indices * np.array(resolution)
             
+            points = origin + indices * np.array(resolution)
+
+            #points = np.expand_dims(np.array(center), axis = 0) #added            
             if is_occupied:
                 pts = np.ones((points.shape[0], points.shape[1] + 1))
                 pts[:,:3] = points
                 pts[:, 3] = category
                 occupied.append(pts)
+                #print("center ", center)
+                #print("POINT ", points)
+                #print("DIMENSION", dimension)
+                #print("Indices", indices)
+
             else:
                 empty.append(points)
 
         cdef np.ndarray[DOUBLE_t, ndim=2] occupied_arr
         cdef np.ndarray[DOUBLE_t, ndim=2] empty_arr
         if len(occupied) == 0:
-            occupied_arr = np.zeros((0, 4), dtype=float)
+            occupied_arr = np.zeros((0, 4), dtype=np.float64)
         else:
             occupied_arr = np.concatenate(occupied, axis=0)
         if len(empty) == 0:
-            empty_arr = np.zeros((0, 3), dtype=float)
+            empty_arr = np.zeros((0, 3), dtype=np.float64)
         else:
             empty_arr = np.concatenate(empty, axis=0)
         return occupied_arr, empty_arr
@@ -584,14 +596,22 @@ cdef class SemanticOcTree:
 
         cdef defs.Pointcloud pc = defs.Pointcloud()
         for p in pointcloud:
+            #print(p[0], ' ', p[1], ' ',p[2])
+            #print(f"{p[0]:.20f}")
+            #k = <float>round(p[0], 2)
+            #print(f"now k is {k:.20f}")
+            #print(<float>p[0], ' ', <float>p[1], ' ', <float>p[2])
             pc.push_back(<float>p[0],
                          <float>p[1],
                          <float>p[2])
+            #print("%.20f" %pc.getPoint(0).x())
+            #print("%.20f" %pc.getPoint(0).y())
+            #print("%.20f" %pc.getPoint(0).z())
 
         self.thisptr.insertPointCloudAndSemantics(pc,
-                                      defs.Vector3(<float>origin[0],
-                                                   <float>origin[1],
-                                                   <float>origin[2]),
+                                      defs.Vector3(<double>origin[0],
+                                                   <double>origin[1],
+                                                   <double>origin[2]),
                                       int(id),
                                       int(est_category),
                                       float(confidence),

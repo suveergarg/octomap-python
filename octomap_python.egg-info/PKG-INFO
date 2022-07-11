@@ -39,6 +39,21 @@ Description: <h1 align="center">octomap-python</h1>
         ## Acknowledgement
         
         This is a fork of [neka-nat/python-octomap](https://github.com/neka-nat/python-octomap).
+        
+        
+        
+        ## STEPS:
+        RUN in same terminal:
+        1.  At root run : python setup.py bdist_wheel
+        2.  Set LD_LIBRARY_PATH : export LD_LIBRARY_PATH=/home/gsuveer/octomap/lib
+                Install from  : https://github.com/suveergarg/octomap/tree/gsuveer/semantic_octomap
+        3.  cd dist/
+              There should be a .whl file here.
+        4.  auditwheel repair --plat manylinux_2_31_x86_64 octomap_python-1.8.0.post12-cp38-cp38-linux_x86_64.whl
+              This will create a folder called wheelhouse with the final .whl file.
+        5.  install this FINAL .whl file using : 
+            pip install <path to octomap-python>/dist/wheelhouse/octomap_python-1.8.0.post12-cp38-cp38-manylinux_2_31_x86_64.whl --force-reinstall
+        6.  Resinstall right version of numpy: pip install numpy==1.22.4 --force-reinstall
 Platform: UNKNOWN
 Classifier: Development Status :: 5 - Production/Stable
 Classifier: Intended Audience :: Developers

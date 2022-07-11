@@ -206,6 +206,13 @@ cdef class iterator_base:
             return (<defs.SemanticOcTreeNode>deref(deref(self.thisptr))).getCategory()
         else:
             raise NullPointerException
+    
+    def getId(self):
+        if self.__is_acceseable():
+            return (<defs.SemanticOcTreeNode>deref(deref(self.thisptr))).getId()
+        else:
+            raise NullPointerException
+
 
 
 
@@ -510,11 +517,13 @@ cdef class SemanticOcTree:
         cdef np.ndarray keep
         cdef int category
         cdef int dimension
+        cdef int id
         for it in self.begin_leafs():
             is_occupied = self.isNodeOccupied(it)
             size = it.getSize()
             center = it.getCoordinate()
             category = it.getCategory()
+            id = it.getId()
 
             dimension = max(1, round(it.getSize() / resolution))
             origin = center - ((dimension / 2.0) - 0.5) * resolution
@@ -528,22 +537,18 @@ cdef class SemanticOcTree:
 
             #points = np.expand_dims(np.array(center), axis = 0) #added            
             if is_occupied:
-                pts = np.ones((points.shape[0], points.shape[1] + 1))
-                pts[:,:3] = points
+                pts = np.ones((points.shape[0], points.shape[1] + 2))
+                pts[:, :3] = points
                 pts[:, 3] = category
+                pts[:, 4] = id
                 occupied.append(pts)
-                #print("center ", center)
-                #print("POINT ", points)
-                #print("DIMENSION", dimension)
-                #print("Indices", indices)
-
             else:
                 empty.append(points)
 
         cdef np.ndarray[DOUBLE_t, ndim=2] occupied_arr
         cdef np.ndarray[DOUBLE_t, ndim=2] empty_arr
         if len(occupied) == 0:
-            occupied_arr = np.zeros((0, 4), dtype=np.float64)
+            occupied_arr = np.zeros((0, 5), dtype=np.float64)
         else:
             occupied_arr = np.concatenate(occupied, axis=0)
         if len(empty) == 0:
@@ -596,17 +601,9 @@ cdef class SemanticOcTree:
 
         cdef defs.Pointcloud pc = defs.Pointcloud()
         for p in pointcloud:
-            #print(p[0], ' ', p[1], ' ',p[2])
-            #print(f"{p[0]:.20f}")
-            #k = <float>round(p[0], 2)
-            #print(f"now k is {k:.20f}")
-            #print(<float>p[0], ' ', <float>p[1], ' ', <float>p[2])
             pc.push_back(<float>p[0],
                          <float>p[1],
                          <float>p[2])
-            #print("%.20f" %pc.getPoint(0).x())
-            #print("%.20f" %pc.getPoint(0).y())
-            #print("%.20f" %pc.getPoint(0).z())
 
         self.thisptr.insertPointCloudAndSemantics(pc,
                                       defs.Vector3(<double>origin[0],

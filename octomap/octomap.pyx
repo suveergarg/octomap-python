@@ -101,6 +101,10 @@ cdef class SemanticOcTreeNode:
             return self.thisptr.hasChildren()
         else:
             raise NullPointerException
+    def getChild(self, i):
+        node = SemanticOcTreeNode()
+        node.thisptr = self.thisptr.getChild(<unsigned int>i)
+        return node
 
 cdef class iterator_base:
     """
@@ -213,7 +217,10 @@ cdef class iterator_base:
         else:
             raise NullPointerException
 
-
+    def getNode(self):
+        node = SemanticOcTreeNode()
+        node.thisptr = self.thisptr.getTopNode()
+        return node
 
 
 cdef class tree_iterator(iterator_base):

@@ -76,6 +76,7 @@ cdef extern from "include_and_setting.h" namespace "octomap":
             double getY() except +
             double getZ() except +
             SemanticOcTreeNode& operator*()
+            SemanticOcTreeNode* getTopNode()
             bool operator==(iterator_base &other)
             bool operator!=(iterator_base &other)
 

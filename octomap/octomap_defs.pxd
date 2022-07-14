@@ -56,6 +56,8 @@ cdef extern from "octomap/SemanticOcTree.h" namespace "octomap":
         bool hasChildren()
         int getCategory()
         int getId()
+        void setId(int id)
+        void setCategory(int category)        
 
 cdef extern from "octomap/OcTreeKey.h" namespace "octomap":
     cdef cppclass OcTreeKey:

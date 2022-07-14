@@ -106,6 +106,11 @@ cdef class SemanticOcTreeNode:
         node.thisptr = self.thisptr.getChild(<unsigned int>i)
         return node
 
+    def setCategory(self, category):
+        self.thisptr.setCategory(<int>category)
+    
+    def setId(self, id):
+        self.thisptr.setId(<int>id)
         
 cdef class iterator_base:
     """

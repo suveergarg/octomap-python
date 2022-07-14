@@ -200,3 +200,5 @@ cdef extern from "include_and_setting.h" namespace "octomap":
         bool isNodeCollapsible(const SemanticOcTreeNode* node)
         void deleteNodeChild(SemanticOcTreeNode *node, unsigned int childIdx)
         bool pruneNode(SemanticOcTreeNode *node)
+
+        double getNodeSize(unsigned depth)

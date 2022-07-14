@@ -106,6 +106,7 @@ cdef class SemanticOcTreeNode:
         node.thisptr = self.thisptr.getChild(<unsigned int>i)
         return node
 
+        
 cdef class iterator_base:
     """
     Iterator over the complete tree (inner nodes and leafs).
@@ -979,3 +980,7 @@ cdef class SemanticOcTree:
                                                            <float?>p[2]))
         else:
             raise NullPointerException
+
+    def getNodeSize(self, depth):
+        size = self.thisptr.getNodeSize(<unsigned int> depth)
+        return size

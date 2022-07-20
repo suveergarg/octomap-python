@@ -111,6 +111,12 @@ cdef class SemanticOcTreeNode:
     
     def setId(self, id):
         self.thisptr.setId(<int>id)
+    
+    def isNull(self):
+        if self.thisptr:
+            return True
+        else:
+            return False
         
 cdef class iterator_base:
     """

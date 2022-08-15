@@ -2,6 +2,7 @@ import subprocess
 import sys
 from setuptools import Extension
 from setuptools import setup
+import os
 # https://github.com/skvark/opencv-python/blob/master/setup.py
 def install_packages(*requirements):
     # No more convenient way until PEP 518 is implemented;
@@ -43,6 +44,10 @@ def main():
     from Cython.Distutils import build_ext
     import numpy
     import skbuild
+    os.makedirs('src/octomap/build', exist_ok=True)
+    subprocess.run(['cmake', ".."], cwd='src/octomap/build', check=True)
+    subprocess.run(['make'], cwd='src/octomap/build', check=True)
+
     ext_modules = [
         Extension(
             'octomap',

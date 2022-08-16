@@ -30,13 +30,7 @@ def get_or_install(name, version=None):
 def get_long_description():
     with open('README.md') as f:
         long_description = f.read()
-    try:
-        import github2pypi
-        return github2pypi.replace_url(
-            slug='wkentaro/octomap-python', content=long_description
-        )
-    except Exception:
-        return long_description
+    return long_description
 def main():
     get_or_install('cython')
     get_or_install('numpy')

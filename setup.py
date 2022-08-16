@@ -9,12 +9,6 @@ def get_long_description():
         long_description = f.read()
     return long_description
 
-
-#subprocess.run(['pip', "install", "numpy"], check=True)
-#subprocess.run(['pip', "install", "cython"], check=True)
-#import pip
-#pip.main(['install', 'numpy', 'cython']) 
-
 from Cython.Distutils import build_ext
 import numpy
 
@@ -31,14 +25,6 @@ ext_modules = [
             'src/octomap/dynamicEDT3D/include',
             numpy.get_include(),
         ],
-        # library_dirs=[
-        #     'src/octomap/lib',
-        # ],
-        # libraries=[
-        #     'dynamicedt3d',
-        #     'octomap',
-        #     'octomath',
-        # ],
         language='c++',
         extra_objects=[
             "src/octomap/lib/libdynamicedt3d.a",
@@ -57,22 +43,9 @@ setup(
         'example': ['glooey', 'imgviz', 'pyglet', 'trimesh[easy]'],
     },
     license='BSD',
-    maintainer='Kentaro Wada',
-    maintainer_email='www.kentaro.wada@gmail.com',
-    url='https://github.com/wkentaro/octomap-python',
-    description='Python binding of the OctoMap library.',
-    long_description=get_long_description(),
-    long_description_content_type='text/markdown',
-    classifiers=[
-        'Development Status :: 5 - Production/Stable',
-        'Intended Audience :: Developers',
-        'Natural Language :: English',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: Implementation :: CPython',
-        'Programming Language :: Python :: Implementation :: PyPy',
-    ],
+    maintainer='Suveer Garg',
+    maintainer_email='suveer.garg@samsung.com',
+    url='https://github.com/gsuveer/octomap-python',
     ext_modules=ext_modules,
     cmdclass={'build_ext': build_ext},
 )

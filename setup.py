@@ -10,8 +10,11 @@ def get_long_description():
     return long_description
 
 
-subprocess.run(['pip', "install", "numpy"], check=True)
-subprocess.run(['pip', "install", "cython"], check=True)
+#subprocess.run(['pip', "install", "numpy"], check=True)
+#subprocess.run(['pip', "install", "cython"], check=True)
+
+import pip
+pip.main(['install', 'numpy', 'cython']) 
 
 from Cython.Distutils import build_ext
 import numpy

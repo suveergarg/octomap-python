@@ -2,3 +2,4 @@
 	path = src/octomap
 	url = https://github.com/suveergarg/octomap.git
 	update = merge
+

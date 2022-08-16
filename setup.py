@@ -3,42 +3,18 @@ import sys
 from setuptools import Extension
 from setuptools import setup
 import os
-# https://github.com/skvark/opencv-python/blob/master/setup.py
-def install_packages(*requirements):
-    # No more convenient way until PEP 518 is implemented;
-    # setuptools only handles eggs
-    subprocess.check_call(
-        [sys.executable, "-m", "pip", "install"] + list(requirements)
-    )
-# https://github.com/skvark/opencv-python/blob/master/setup.py
-def get_or_install(name, version=None):
-    # Do not import 3rd-party modules into the current process
-    import json
-    js_packages = json.loads(
-        subprocess.check_output(
-            [sys.executable, "-m", "pip", "list", "--format", "json"]
-        ).decode('ascii'))  # valid names & versions are ASCII as per PEP 440
-    try:
-        [package] = (
-            package for package in js_packages if package['name'] == name
-        )
-    except ValueError:
-        install_packages("%s==%s" % (name, version) if version else name)
-        return version
-    else:
-        return package['version']
+
 def get_long_description():
     with open('README.md') as f:
         long_description = f.read()
     return long_description
 
-get_or_install('cython')
-get_or_install('numpy')
-#get_or_install('scikit-build')
+
+subprocess.run(['pip', "install", "numpy"], check=True)
+subprocess.run(['pip', "install", "cython"], check=True)
 
 from Cython.Distutils import build_ext
 import numpy
-#import skbuild
 
 os.makedirs('src/octomap/build', exist_ok=True)
 subprocess.run(['cmake', ".."], cwd='src/octomap/build', check=True)

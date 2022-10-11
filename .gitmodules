@@ -1,4 +1,3 @@
 [submodule "src/octomap"]
 	path = src/octomap
 	url = https://github.com/suveergarg/octomap.git
-	branch = gsuveer/semantic_octomap

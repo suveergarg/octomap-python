@@ -37,7 +37,7 @@ ext_modules = [
 
 setup(
     name='octomap-python',
-    version='1.8.0.post12',
+    version='1.8.0.post14',
     install_requires=['numpy'],
     extras_require={
         'example': ['glooey', 'imgviz', 'pyglet', 'trimesh[easy]'],
